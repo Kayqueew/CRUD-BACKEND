@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model User {
+  id                Int             @id @default(autoincrement())
+  name              String
+  dateOfBirth       DateTime
+  age               Int?            // Opcional, pode ser calculado dinamicamente
+  gender            Gender          @default(PREFER_NOT_TO_SAY)
+  cpf               String          @unique
+  telephone         String
+  email             String          @unique
+  nationality       String
+  maritalStatus     MaritalStatus
+
+  // Relacionamentos com as outras tabelas
+  address           Address?
+  academicData      AcademicData[]
+  emergencyContacts EmergencyContact[]
+}
+
+model Address {
+  id          Int     @id @default(autoincrement())
+  address     String
+  street      String
+  number      String
+  complement  String?
+  neighborhood String
+  city        String
+  state       String
+  postalCode  String
+  country     String
+  userId      Int     @unique
+  user        User    @relation(fields: [userId], references: [id])
+}
+
+model AcademicData {
+  id               Int           @id @default(autoincrement())
+  registrationNumber String      @unique
+  course           String
+  yearOfEntry      Int
+  currentSemester  Int
+  academicStatus   AcademicStatus
+  gpa              String
+  educationMode    EducationMode
+  userId           Int
+  user             User          @relation(fields: [userId], references: [id])
+}
+
+model EmergencyContact {
+  id           Int     @id @default(autoincrement())
+  name         String
+  relationship String
+  phone        String
+  email        String
+  userId       Int
+  user         User    @relation(fields: [userId], references: [id])
+}
+
+// Enums
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+  OTHER
+}
+
+enum AcademicStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  DROPPED_OUT
+  SUSPENDED
+}
+
+enum EducationMode {
+  PRESENTIAL
+  REMOTE
+  HYBRID
+}

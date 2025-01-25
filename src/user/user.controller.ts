@@ -1,65 +1,57 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
   Delete,
-  //UseGuards,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-//import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto); // Método público, sem o AuthGuard
-  }
-
   @Get()
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
   findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);
   }
 
-  @Get(':id/address')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @Get('/address/:id')
+  @UseGuards(JwtAuthGuard)
   async getAddress(@Param('id') id: string) {
     return this.userService.getAddress(+id);
   }
 
-  @Get(':id/academicData')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @Get('/academicData/:id')
+  @UseGuards(JwtAuthGuard)
   async getAcademicData(@Param('id') id: string) {
     return this.userService.getAcademicData(+id);
   }
 
-  @Get(':id/emergencyContacts')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @Get('/emergencyContacts/:id')
+  @UseGuards(JwtAuthGuard)
   async getEmergencyContacts(@Param('id') id: string) {
     return this.userService.getEmergencyContacts(+id);
   }
 
-  @Patch(':id')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @Patch('/update/:id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
-  // @UseGuards(AuthGuard('jwt')) // Exige autenticação
+  @Delete('delete/:id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.userService.remove(+id);
   }

@@ -12,36 +12,36 @@ import { Type } from 'class-transformer';
 
 // Enums
 export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE',
-  OTHER = 'OTHER',
-  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
+  HOMEM = 'HOMEM',
+  MULHER = 'MULHER',
+  OUTRO = 'OUTRO',
+  PREFIRO_NÃO_RESPONDER = 'PREFIRO_NÃO_RESPONDER',
 }
 
 export enum MaritalStatus {
-  SINGLE = 'SINGLE',
-  MARRIED = 'MARRIED',
-  DIVORCED = 'DIVORCED',
-  WIDOWED = 'WIDOWED',
-  OTHER = 'OTHER',
+  SOLTEIRO = 'SOLTEIRO',
+  CASADO = 'CASADO',
+  VIÚVO = 'VIÚVO',
+  DIVORCIADO = 'DIVORCIADO',
+  OUTRO = 'OUTRO',
 }
 
 export enum AcademicStatus {
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
-  GRADUATED = 'GRADUATED',
-  DROPPED_OUT = 'DROPPED_OUT',
-  SUSPENDED = 'SUSPENDED',
+  ATIVO = 'ATIVO',
+  INATIVO = 'INATIVO',
+  GRADUADO = 'GRADUADO',
+  FORA_DA_FACULDADE = 'FORA_DA_FACULDADE',
+  SUSPENSO = 'SUSPENSO',
 }
 
 export enum EducationMode {
-  PRESENTIAL = 'PRESENTIAL',
-  REMOTE = 'REMOTE',
-  HYBRID = 'HYBRID',
+  PRESENCIAL = 'PRESENCIAL',
+  REMOTO = 'REMOTO',
+  HIBRIDO = 'HIBRIDO',
 }
 
 // DTOs para dados relacionados
-class AddressDto {
+export class AddressDto {
   @IsNotEmpty()
   @IsString()
   address: string;
@@ -56,7 +56,7 @@ class AddressDto {
 
   @IsOptional()
   @IsString()
-  complement?: string;
+  complement: string;
 
   @IsNotEmpty()
   @IsString()
@@ -79,7 +79,7 @@ class AddressDto {
   country: string;
 }
 
-class AcademicDataDto {
+export class AcademicDataDto {
   @IsNotEmpty()
   @IsString()
   registrationNumber: string;
@@ -100,14 +100,15 @@ class AcademicDataDto {
 
   @IsOptional()
   @IsString()
-  gpa?: string;
+  gpa: string;
 
   @IsNotEmpty()
   @IsEnum(EducationMode)
   educationMode: EducationMode;
+  //id: number;
 }
 
-class EmergencyContactDto {
+export class EmergencyContactDto {
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -124,10 +125,29 @@ class EmergencyContactDto {
   @IsString()
   @IsEmail()
   email: string;
+  //id: number;
+}
+
+export class CreateUserLogin {
+  @IsNotEmpty()
+  @IsString()
+  username: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string;
 }
 
 // DTO principal
 export class CreateUserDto {
+  @IsNotEmpty()
+  @IsString()
+  username: string;
+
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+
   @IsNotEmpty()
   @IsString()
   name: string;
@@ -161,8 +181,9 @@ export class CreateUserDto {
   maritalStatus: MaritalStatus;
 
   @ValidateNested()
+  @IsArray()
   @Type(() => AddressDto)
-  address: AddressDto;
+  address: AddressDto[];
 
   @ValidateNested({ each: true })
   @IsArray()
@@ -173,5 +194,5 @@ export class CreateUserDto {
   @IsArray()
   @Type(() => EmergencyContactDto)
   emergencyContacts: EmergencyContactDto[];
-  static id: any;
+  //static id: any;
 }

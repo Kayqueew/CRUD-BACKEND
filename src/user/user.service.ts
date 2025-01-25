@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -7,73 +6,37 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createUserDto: CreateUserDto) {
-    const { address, academicData, emergencyContacts, ...userData } =
-      createUserDto;
-
-    const user = await this.prisma.$transaction(async (prisma) => {
-      // Cria o usuário principal
-      const createdUser = await prisma.user.create({
-        data: userData,
-      });
-
-      // Cria o endereço
-      if (address) {
-        await prisma.address.create({
-          data: {
-            ...address,
-            userId: createdUser.id, // Relaciona ao ID do usuário criado
-          },
-        });
-      }
-
-      // Cria os dados acadêmicos
-      if (academicData?.length) {
-        await prisma.academicData.createMany({
-          data: academicData.map((data) => ({
-            ...data,
-            userId: createdUser.id, // Relaciona ao ID do usuário criado
-            gpa: data.gpa,
-          })),
-        });
-      }
-
-      // Cria os contatos de emergência
-      if (emergencyContacts?.length) {
-        await prisma.emergencyContact.createMany({
-          data: emergencyContacts.map((contact) => ({
-            ...contact,
-            userId: createdUser.id, // Relaciona ao ID do usuário criado
-          })),
-        });
-      }
-
-      return createdUser;
-    });
-
-    return user;
-  }
-
-  findAll() {
+  async findAll() {
     // Retorna todos os usuários com os dados relacionados
     return this.prisma.user.findMany({
       include: {
-        address: true,
-        academicData: true,
-        emergencyContacts: true,
+        addressId: true,
+        academicDataId: true,
+        emergencyContactsId: true,
       },
     });
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({
-      where: { id },
-      include: {
-        address: true,
-        academicData: true,
-        emergencyContacts: true,
-      },
-    });
+  async findOne(id: number) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        include: {
+          addressId: true,
+          academicDataId: true,
+          emergencyContactsId: true,
+        },
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      console.error('Error finding user:', error.message);
+      throw error;
+    }
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -88,29 +51,32 @@ export class UserService {
       });
 
       if (address) {
-        await prisma.address.update({
-          where: { userId: id },
-          data: address,
+        await prisma.address.deleteMany({ where: { userId: id } }); // Deleta dados antigos
+        await prisma.address.createMany({
+          data: address.map((data) => ({
+            ...data,
+            userId: id, // Atualiza os dados relacionados ao ID do usuário
+          })),
         });
       }
 
       if (academicData) {
-        await prisma.academicData.deleteMany({ where: { userId: id } }); // Deleta dados acadêmicos antigos
+        await prisma.academicData.deleteMany({ where: { userId: id } });
         await prisma.academicData.createMany({
           data: academicData.map((data) => ({
             ...data,
-            userId: id, // Atualiza os dados relacionados ao ID do usuário
+            userId: id, //
             gpa: data.gpa,
           })),
         });
       }
 
       if (emergencyContacts?.length) {
-        await prisma.emergencyContact.deleteMany({ where: { userId: id } }); // Deleta contatos antigos
+        await prisma.emergencyContact.deleteMany({ where: { userId: id } });
         await prisma.emergencyContact.createMany({
           data: emergencyContacts.map((contact) => ({
             ...contact,
-            userId: id, // Atualiza os contatos relacionados ao ID do usuário
+            userId: id,
           })),
         });
       }
